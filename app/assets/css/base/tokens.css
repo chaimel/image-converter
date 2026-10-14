@@ -1,0 +1,18 @@
+:root {
+  --font-ui: 'DM Sans Variable', sans-serif;
+  --font-heading: 'Manrope Variable', sans-serif;
+  --ink: #29352f;
+  --muted: #657068;
+  --line: #e2e7df;
+  --line-strong: #b9c5b3;
+  --surface: #ffffff;
+  --canvas: #f5f7f2;
+  --accent: #d5eba7;
+  --brand: #3e5d37;
+  --soft: #f0f4ec;
+  --warning: #865d13;
+  --warning-soft: #faf3e4;
+  --danger: #ac3c31;
+  --danger-soft: #fff0ed;
+  --success: #3f6b37;
+}
