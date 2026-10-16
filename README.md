@@ -12,12 +12,14 @@ Dependencies are installed in this workspace. On a new machine, install Node.js 
 
 ## Use it
 
-1. Drag images onto the page, browse for files, or try the included sample.
+1. Drop images, folders, or ZIP files onto the page, including several together. **Browse files** accepts multiple images and ZIPs; **Choose folder** includes images from its subfolders. You can also try the included sample.
 2. Choose the output format and optional quality, size, and background settings.
 3. Click **Convert images**. Download individual files or the whole batch as a ZIP.
 4. Click an image thumbnail to compare the source and result. Use **Fit** for an overview or **100%** to inspect export pixels; scroll inside the export to see more.
 
-Changing export settings clears the previous results and makes the batch ready to convert again. Source files are never modified. Duplicate output names get numbered in ZIP downloads. Refreshing or closing the page clears the batch.
+Changing export settings clears the previous results and makes the batch ready to convert again. Source files are never modified. ZIP downloads contain a flat list of images, with duplicate output names numbered so no image is overwritten. Refreshing or closing the page clears the batch.
+
+**Folders and ZIPs:** The app finds supported images in subfolders and expands ZIPs locally in your browser. Non-image files and macOS metadata are skipped. Folder paths appear beneath image names so files with the same name remain distinguishable. Password-protected or encrypted ZIPs and ZIPs nested inside another ZIP are not supported. Dropping folders depends on your browser; if dragging a folder does not work, use **Choose folder**, or add a ZIP when folder selection is unavailable.
 
 | Format     | Import | Export | Notes                                              |
 | ---------- | ------ | ------ | -------------------------------------------------- |
@@ -40,11 +42,11 @@ Changing export settings clears the previous results and makes the batch ready t
 
 **Resizing:** Aspect ratio is preserved by fitting inside the supplied dimensions. Turn it off to stretch when both dimensions are set. Smaller raster images are not enlarged unless enabled; SVG vectors always render at the requested size. Enlarging a raster image cannot restore missing detail. ICO uses a square canvas up to 256 × 256 with centered artwork and padding. The sticker preset exports transparent PNG within 2048 × 2048; the web preset deliberately uses lossy WebP at quality 82 within 1600 × 1600 for smaller files.
 
-**Limits:** 40 MB per input, 40 megapixels per image, 8192 px per requested dimension, and 50 files / 200 MB per batch. Animated and multipage files export only their first frame or page. This is not a universal document or GPU texture converter: HEIC, PDF, PSD, EPS, BMP, and ETC2 are not supported.
+**Limits:** 40 MB per image, 40 megapixels per image, 8192 px per requested dimension, and 50 images / 200 MB of image data per batch. A ZIP file can be up to 200 MB compressed; the images inside must fit the remaining batch count and size limits, and each extracted image must be at most 40 MB. A ZIP that exceeds these limits is rejected as a whole with an explanation. Animated and multipage files export only their first frame or page. This is not a universal document or GPU texture converter: HEIC, PDF, PSD, EPS, BMP, and ETC2 are not supported.
 
 ## Local processing
 
-The browser sends image bytes only to this machine's loopback server. Processing happens in memory using [Sharp](https://sharp.pixelplumbing.com/) and [ImageTracer](https://github.com/jankovicsandras/imagetracerjs). ZIP downloads use fflate. The app does not save uploaded images, retain conversion history, or contact an online conversion service. Downloaded files are saved by your browser.
+The browser sends image bytes only to this machine's loopback server. Processing happens in memory using [Sharp](https://sharp.pixelplumbing.com/) and [ImageTracer](https://github.com/jankovicsandras/imagetracerjs). ZIP import and download use fflate in the browser. Only extracted image bytes are sent to the local conversion server. The app does not save uploaded images, retain conversion history, or contact an online conversion service. Downloaded files are saved by your browser.
 
 The launcher binds to `127.0.0.1`. Image endpoints reject non-local hosts and cross-origin requests. Nuxt devtools and telemetry are disabled. Run this as a local tool, not a publicly hosted upload service.
 
@@ -59,7 +61,7 @@ app/
   layouts/default.vue                  # Shared studio layout
   components/
     base/                              # MButton, MModal
-    layout/                            # Sidebar, Topbar
+    layout/                            # Topbar
     features/converter/
       Index.vue                        # Feature composition and presentation state
       Banner.vue, Presets.vue, Upload.vue
@@ -69,7 +71,7 @@ app/
   composables/features/converter/      # Batch lifecycle, requests, presets, downloads
   data/features/converter.ts           # Format, preset, and guide definitions
   types/features/converter.ts          # Typed frontend contracts
-  utils/                               # Formatting, browser download, ZIP creation
+  utils/                               # Formatting, browser download, folder and ZIP import/export
   assets/main.css                      # Stylesheet entry point
   assets/css/                          # Tokens, reset, typography, shared controls
 shared/image-settings.mjs               # Shared export defaults and dimensions
@@ -80,14 +82,13 @@ Pages compose features, and features explicitly import their sections. Component
 
 ```sh
 npm run dev        # Local development with hot reload
-npm test           # Real format, pixel, resize, orientation, SVG, and validation tests
 npm run typecheck  # Vue and server TypeScript checks
 npm run build      # Rebuild after changing source code
 npm start          # Run the production build and open the browser
 ```
 
-`npm start -- --no-open` starts without opening a browser. After a build, `npm run test:api` runs the production server on a temporary loopback port, checks its routes and conversions, then stops it. Restart an already running launcher after rebuilding to load the new version.
+`npm start -- --no-open` starts without opening a browser. Restart an already running launcher after rebuilding to load the new version.
 
-The automated suite covers all 56 combinations of the seven supported input formats and eight outputs, plus visible-pixel fidelity, SVG rendering resolution, resizing, backgrounds, vector preservation, tracing, ICO padding, 16-bit channels, color profiles, orientation, and first-frame/page behavior. Frontend state tests cover presets, settings changes, request snapshots, progress, cancellation, stale responses, and file URL cleanup. The production API check exercises all 56 downloadable routes, including MIME types, dimensions, and lossless pixels. Representative fixtures verify these behaviors; unusual fonts, embedded bitmap content, and SVG effects can still depend on the source artwork.
+The workspace uses a compact top bar, a file area with quick presets, and a separate export panel. The layout stacks on smaller screens. Prettier, EditorConfig, and VS Code settings use four spaces for indentation.
 
 The dependency audit currently reports inherited Nuxt tooling advisories involving simple-git, node-forge, and braces. Devtools are disabled, and these tools are not used by conversion endpoints. Do not run `npm audit fix --force`: its suggested Nuxt downgrade would replace the current framework major version. Recheck upstream updates before any deployment beyond localhost.

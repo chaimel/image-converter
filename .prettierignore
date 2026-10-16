@@ -1,0 +1,12 @@
+node_modules/
+.nuxt/
+.output/
+.nitro/
+.data/
+.cache/
+dist/
+coverage/
+logs/
+*.log
+package-lock.json
+public/
