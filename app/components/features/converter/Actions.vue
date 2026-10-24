@@ -47,7 +47,7 @@
             ><template #prefix><Download :size="16" /></template
             >{{ packing ? 'Preparing ZIP…' : 'Download all as ZIP' }}</MButton
         >
-        <p><ShieldCheck :size="12" />Processed on your computer.</p>
+        <p><ShieldCheck :size="12" />Converted in memory. Never stored.</p>
     </section>
 </template>
 <script setup lang="ts">

@@ -20,16 +20,16 @@
                 <p>
                     Small SVGs render at 2048 px on their longest edge by default. Set a custom size for your
                     project. Enlarging an existing bitmap cannot add missing detail; SVG text also depends on
-                    locally installed fonts.
+                    the fonts available to the converter.
                 </p>
             </div>
         </div>
         <p class="guide__limits">
-            40 MB per file · 40 megapixels per image · 50 files / 200 MB per batch. All processing happens on
-            this computer. Animated and multipage files use their first frame or page.
+            40 MB per file · 40 megapixels per image · 50 files / 200 MB per batch. Images are converted in
+            memory and never stored. Animated and multipage files use their first frame or page.
         </p>
         <template #footer
-            ><span class="guide__footer"><ShieldCheck :size="15" />No cloud uploads. No watermarks.</span
+            ><span class="guide__footer"><ShieldCheck :size="15" />Never stored. No watermarks.</span
             ><MButton @click="open = false"
                 >Back to creating<template #suffix><ArrowRight :size="15" /></template></MButton
         ></template>

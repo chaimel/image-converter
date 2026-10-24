@@ -15,10 +15,11 @@ const MAX_FILE_BYTES = 40 * 1024 * 1024
 type Inspection = Pick<Item, 'preview' | 'width' | 'height' | 'format' | 'pages'>
 
 async function requestError(response: Response): Promise<string> {
+    // The server's per-visitor limits answer 429 (or 503 while restarting) with a plain page, not JSON.
+    if (response.status === 429 || response.status === 503)
+        return 'The converter is busy. Try again in a moment.'
     const body = await response.json().catch(() => null)
-    return (
-        body?.statusMessage || body?.message || `The local converter returned an error (${response.status}).`
-    )
+    return body?.statusMessage || body?.message || `The converter returned an error (${response.status}).`
 }
 
 // The page owns presentation state; this instance owns the batch and its resources.
@@ -468,7 +469,7 @@ export function useImageConverter() {
                 archiveUrls.delete(url)
             }, 10000)
             archiveUrls.set(url, timeout)
-            downloadFile(url, 'musticker-images.zip')
+            downloadFile(url, 'converted-images.zip')
         } catch {
             message('Could not create the ZIP. You can still download each image individually.')
         } finally {

@@ -1,14 +1,37 @@
-# Musticker Studio — local image converter
+# Image Converter
 
 A free local tool for preparing project images. No accounts, API keys, paid services, or cloud uploads. Fonts, icons, sample artwork, and conversion libraries are bundled locally.
 
 ## Open it
 
-On Windows, double-click **Start Musticker.cmd**. It opens `http://127.0.0.1:3000` in your browser. Keep the launcher window open while using the converter; press Ctrl+C or close the window to stop it.
+On Windows, double-click **Start Image Converter.cmd**. It opens `http://127.0.0.1:3000` in your browser. Keep the launcher window open while using the converter; press Ctrl+C or close the window to stop it.
 
 Alternatively, run `npm start` in this folder. The launcher builds the app if no production build exists. To use a different port in PowerShell: `$env:PORT=3001; npm.cmd start`.
 
 Dependencies are installed in this workspace. On a new machine, install Node.js 22.12+ (Node 24 recommended), run `npm install`, then `npm start`. In Windows PowerShell, use `npm.cmd` if script execution policy blocks `npm`. Internet is needed for the initial dependency download, not for conversion.
+
+## Run with Docker
+
+Install Docker (Docker Desktop on Windows). Copy `.env.example` to `.env` if there is no `.env` yet, then in this folder run:
+
+```sh
+docker compose up -d --build   # Build the image and start the converter in the background
+docker compose logs -f         # Watch its output
+docker compose down            # Stop it
+```
+
+Open `http://localhost:3000`. Run `docker compose up -d --build` again after changing source code.
+
+The container listens only on this machine (`127.0.0.1:3000`). Its filesystem is read-only and `/tmp` lives in memory, so uploaded images never touch the disk. It may use at most 1 GB of RAM and no extra swap (`mem_limit` and `memswap_limit` in `compose.yaml`); if it hits the limit, Docker restarts it. The image includes basic fonts (DejaVu, Liberation) for SVG text.
+
+**Environments:** `ENV` in the root `.env` picks the environment, and its settings in `environments/<ENV>.env` are loaded with dotenv. `.env` is not committed, so each machine keeps its own: `ENV=docker` on your PC, `ENV=production` on your server. Docker Compose and the launcher both read it; without `.env`, Docker uses `docker` and the launcher loads nothing (localhost only). Variables already set in the shell take priority over both files. `config/app.ts` reads these values, like Laravel's `config/app.php`, and `nuxt.config.ts` uses it; add new settings there. The `environments/` files are committed, so keep passwords and API keys out of them. Leave `HOST` and `PORT` out of the files used by Docker; the container sets them itself.
+
+| File                          | Used for              | `NUXT_ALLOWED_HOSTS`            |
+| ----------------------------- | --------------------- | ------------------------------- |
+| `environments/docker.env`     | Docker on this PC     | Empty: localhost only           |
+| `environments/production.env` | Docker on your server | Your domain(s), comma-separated |
+
+**Putting it on a server:** replace `example.com` in `environments/production.env` with your domain. On the server, copy `.env.example` to `.env`, set `ENV=production`, then run `docker compose up -d --build`. Requests for any other address are rejected. Point a reverse proxy such as nginx or Caddy at `127.0.0.1:3000` for your domain and HTTPS. The proxy must pass the original `Host` header (`proxy_set_header Host $host;` in nginx) and accept uploads up to 40 MB (`client_max_body_size 40M;`).
 
 ## Use it
 
@@ -48,7 +71,7 @@ Changing export settings clears the previous results and makes the batch ready t
 
 The browser sends image bytes only to this machine's loopback server. Processing happens in memory using [Sharp](https://sharp.pixelplumbing.com/) and [ImageTracer](https://github.com/jankovicsandras/imagetracerjs). ZIP import and download use fflate in the browser. Only extracted image bytes are sent to the local conversion server. The app does not save uploaded images, retain conversion history, or contact an online conversion service. Downloaded files are saved by your browser.
 
-The launcher binds to `127.0.0.1`. Image endpoints reject non-local hosts and cross-origin requests. Nuxt devtools and telemetry are disabled. Run this as a local tool, not a publicly hosted upload service.
+The launcher binds to `127.0.0.1`. Image endpoints reject cross-origin requests and any host other than localhost or the domains listed in `NUXT_ALLOWED_HOSTS`. Nuxt devtools and telemetry are disabled.
 
 ## Development and checks
 
@@ -56,26 +79,29 @@ The frontend follows the same feature-based organization as `cloud/frontend`:
 
 ```text
 app/
-  app.vue                              # Nuxt layout/page shell
-  pages/index.vue                      # Route entry
-  layouts/default.vue                  # Shared studio layout
-  components/
-    base/                              # MButton, MModal
-    layout/                            # Topbar
-    features/converter/
-      Index.vue                        # Feature composition and presentation state
-      Banner.vue, Presets.vue, Upload.vue
-      Actions.vue, Preview.vue, FormatGuide.vue
-      queue/                           # Queue and file item
-      settings/                        # Format, dimensions, background
-  composables/features/converter/      # Batch lifecycle, requests, presets, downloads
-  data/features/converter.ts           # Format, preset, and guide definitions
-  types/features/converter.ts          # Typed frontend contracts
-  utils/                               # Formatting, browser download, folder and ZIP import/export
-  assets/main.css                      # Stylesheet entry point
-  assets/css/                          # Tokens, reset, typography, shared controls
-shared/image-settings.mjs               # Shared export defaults and dimensions
+    app.vue                            # Nuxt layout/page shell
+    pages/index.vue                    # Route entry
+    layouts/default.vue                # Shared studio layout
+    components/
+        base/                          # MButton, MModal
+        layout/                        # Topbar
+        features/converter/
+            Index.vue                  # Feature composition and presentation state
+            Banner.vue, Presets.vue, Upload.vue
+            Actions.vue, Preview.vue, FormatGuide.vue
+            queue/                     # Queue and file item
+            settings/                  # Format, dimensions, background
+    composables/features/converter/    # Batch lifecycle, requests, presets, downloads
+    data/features/converter.ts         # Format, preset, and guide definitions
+    types/features/converter.ts        # Typed frontend contracts
+    utils/                             # Formatting, browser download, folder and ZIP import/export
+    assets/main.css                    # Stylesheet entry point
+    assets/css/                        # Tokens, reset, typography, shared controls
+shared/image-settings.mjs              # Shared export defaults and dimensions
 server/                                # Local conversion endpoints and image engine
+config/app.ts                          # App settings read from the environment, used by nuxt.config.ts
+environments/                          # docker.env and production.env, chosen by ENV in .env
+scripts/                               # Windows launcher (start.mjs), Docker entry (serve.mjs), env loader
 ```
 
 Pages compose features, and features explicitly import their sections. Component-specific styles are scoped beside their templates; global CSS contains foundations and shared controls. `useImageConverter` owns each page's in-memory batch, cancels requests on teardown, ignores stale responses, and releases generated file URLs. Dialog, drag, and preview state stays in the feature UI. The shared export settings remain the source of truth for both the frontend and conversion engine.

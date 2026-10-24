@@ -41,6 +41,12 @@ export interface PresetChoice {
     icon: 'zap' | 'sparkles' | 'monitor'
 }
 
+export interface AccuracyPoint {
+    title: string
+    detail: string
+    icon: 'scan' | 'palette' | 'contrast' | 'swatch' | 'pen' | 'eye'
+}
+
 export interface ConversionProgress {
     done: number
     total: number

@@ -60,8 +60,8 @@
                         ><Layers :size="17" /><strong>Work in batches</strong
                         ><small>Up to 50 images at a time.</small></span
                     ><span
-                        ><LockKeyhole :size="17" /><strong>Stay local</strong
-                        ><small>Your files stay on this device.</small></span
+                        ><LockKeyhole :size="17" /><strong>Never stored</strong
+                        ><small>Converted in memory, then discarded.</small></span
                     >
                 </div>
                 <div v-if="completed.length" class="converter__ready" role="status">
@@ -107,6 +107,7 @@
                 />
             </div>
         </div>
+        <Accuracy />
         <FormatGuide v-model="guideOpen" />
         <Preview v-model="previewOpen" :item="selected" />
         <div v-if="notice" class="converter__toast" role="status">
@@ -142,6 +143,7 @@ import Upload from './Upload.vue'
 import Queue from './queue/Index.vue'
 import Settings from './settings/Index.vue'
 import Actions from './Actions.vue'
+import Accuracy from './Accuracy.vue'
 import FormatGuide from './FormatGuide.vue'
 import Preview from './Preview.vue'
 

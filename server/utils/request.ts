@@ -2,12 +2,23 @@ import { createError, getHeader, type H3Event } from 'h3'
 import { Buffer } from 'node:buffer'
 import { MAX_BYTES, ConversionError } from './converter.mjs'
 
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+
+function isAllowedHost(event: H3Event, host: string): boolean {
+    const name = host.replace(/:\d+$/, '').toLowerCase()
+    const extra = String(useRuntimeConfig(event).allowedHosts || '')
+        .split(',')
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean)
+    return [...LOCAL_HOSTS, ...extra].includes(name)
+}
+
 export async function readImage(event: H3Event): Promise<Buffer> {
     const host = getHeader(event, 'host') || ''
-    if (!/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host)) {
+    if (!isAllowedHost(event, host)) {
         throw createError({
             statusCode: 403,
-            statusMessage: 'This converter is only available on localhost.',
+            statusMessage: 'This converter is not available on this address.',
         })
     }
     const origin = getHeader(event, 'origin')

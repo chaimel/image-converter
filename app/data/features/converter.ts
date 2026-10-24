@@ -1,4 +1,4 @@
-import type { FormatChoice, PresetChoice } from '~/types/features/converter'
+import type { AccuracyPoint, FormatChoice, PresetChoice } from '~/types/features/converter'
 
 export const acceptedImageTypes = '.svg,.png,.webp,.jpg,.jpeg,.avif,.gif,.tif,.tiff,.zip'
 
@@ -17,6 +17,40 @@ export const presetChoices: PresetChoice[] = [
     { id: 'web', label: 'Web ready', detail: 'WebP · 1600 px · smaller files', icon: 'zap' },
     { id: 'sticker', label: 'Sticker artwork', detail: 'PNG · 2048 px · lossless', icon: 'sparkles' },
     { id: 'icon', label: 'Website icon', detail: 'ICO · 256 × 256 px', icon: 'monitor' },
+]
+
+// What sets the converter apart; also summarized in public/llms.txt and config/seo.ts.
+export const accuracyPoints: AccuracyPoint[] = [
+    {
+        title: 'Lossless by default',
+        detail: 'WebP, AVIF, PNG and TIFF keep every pixel unless you choose a smaller, lossy file.',
+        icon: 'scan',
+    },
+    {
+        title: '16-bit color stays 16-bit',
+        detail: 'High-bit-depth PNG and TIFF sources are not squeezed down to 8-bit.',
+        icon: 'palette',
+    },
+    {
+        title: 'Full-color JPEGs',
+        detail: 'JPEG starts at quality 95 with full 4:4:4 color, so edges and red tones stay sharp.',
+        icon: 'contrast',
+    },
+    {
+        title: 'Consistent color',
+        detail: 'Color-managed images are converted to sRGB, so they look the same in every browser.',
+        icon: 'swatch',
+    },
+    {
+        title: 'Crisp SVG exports',
+        detail: 'Small SVGs render at 2048 px instead of tiny and blurry. SVG output can keep the vectors.',
+        icon: 'pen',
+    },
+    {
+        title: 'Check before you download',
+        detail: 'Compare source and result at 100% and get a warning whenever an export changes the image.',
+        icon: 'eye',
+    },
 ]
 
 export const formatGuide = [

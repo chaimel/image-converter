@@ -1,0 +1,46 @@
+# Build the Docker image on GitHub's machines and run it on the VPS, so neither the laptop nor the
+# server has to build. Runs on every push to main, or by hand from the repo's Actions tab.
+# Needs three repository secrets: DEPLOY_HOST, DEPLOY_USER and DEPLOY_SSH_KEY.
+name: Deploy
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+# One deploy at a time; a newer push waits for the current one to finish.
+concurrency:
+    group: deploy
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        env:
+            SERVER: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+            APP_DIR: apps/image-converter
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Build the image
+              run: docker build -t image-converter .
+
+            - name: Connect to the server
+              env:
+                  DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+                  DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+              run: |
+                  mkdir -p ~/.ssh
+                  printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+                  chmod 600 ~/.ssh/id_ed25519
+                  ssh-keyscan -t ed25519 "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+            - name: Send the image to the server
+              run: docker save image-converter | gzip | ssh "$SERVER" 'gunzip | docker load'
+
+            # The server's .env picks environments/production.env (allowed domain); create it once.
+            - name: Start the new version
+              run: |
+                  ssh "$SERVER" "mkdir -p $APP_DIR && cd $APP_DIR && (test -f .env || echo ENV=production > .env)"
+                  scp compose.yaml "$SERVER:$APP_DIR/compose.yaml"
+                  ssh "$SERVER" "cd $APP_DIR && docker compose up -d --no-build && docker image prune -f"

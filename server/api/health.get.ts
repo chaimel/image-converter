@@ -1,1 +1,1 @@
-export default defineEventHandler(() => ({ app: 'musticker-image-converter', status: 'ready' }))
+export default defineEventHandler(() => ({ app: 'image-converter', status: 'ready' }))

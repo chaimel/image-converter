@@ -4,8 +4,13 @@
         <Topbar />
         <main id="main-content" class="studio-layout__content" tabindex="-1"><slot /></main>
         <footer class="studio-layout__footer">
-            <span>Musticker Studio <span aria-hidden="true">/</span> Image tools</span>
-            <span>Free. Local. Ready for your next project.</span>
+            <span>Image Converter <span aria-hidden="true">/</span> Image tools</span>
+            <span
+                >Free. Files are never stored.
+                <a href="https://github.com/chaimel/image-converter" target="_blank" rel="noopener noreferrer"
+                    >Run it locally from GitHub</a
+                ></span
+            >
         </footer>
     </div>
 </template>
@@ -42,6 +47,11 @@ import Topbar from '~/components/layout/Topbar.vue'
 .studio-layout__footer > span:first-child {
     display: flex;
     gap: 10px;
+}
+.studio-layout__footer a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 @media (max-width: 600px) {
     .studio-layout__content {

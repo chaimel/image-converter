@@ -1,0 +1,20 @@
+.git
+.vscode
+.idea
+.fleet
+.nuxt
+.nitro
+.output
+.cache
+.data
+dist
+node_modules
+logs
+*.log
+.env
+.env.*
+.DS_Store
+Dockerfile
+.dockerignore
+compose.yaml
+Start Image Converter.cmd

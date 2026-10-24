@@ -4,9 +4,9 @@
             <div>
                 <div class="banner__title">
                     <h1>Image converter</h1>
-                    <span>LOCAL TOOL</span>
+                    <span>FREE TOOL</span>
                 </div>
-                <p>Convert, resize, and prepare images for your projects.</p>
+                <p>Accurate conversions that keep every detail. Lossless by default.</p>
             </div>
             <MButton variant="secondary" size="sm" @click="emit('guide')">
                 <template #prefix><CircleHelp :size="15" /></template>Format guide

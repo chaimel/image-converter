@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { spawn, spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import './env.mjs'
 
 process.chdir(fileURLToPath(new URL('..', import.meta.url)))
 const port = Number(process.env.PORT || 3000)
@@ -22,13 +23,13 @@ const openBrowser = () => {
 async function isOurServer() {
     try {
         const response = await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(800) })
-        return (await response.json()).app === 'musticker-image-converter'
+        return (await response.json()).app === 'image-converter'
     } catch {
         return false
     }
 }
 if (await isOurServer()) {
-    console.log(`Musticker Studio is already running at ${url}`)
+    console.log(`Image Converter is already running at ${url}`)
     openBrowser()
 } else {
     if (!existsSync('node_modules/nuxt')) {
@@ -70,7 +71,7 @@ if (await isOurServer()) {
     for (let attempt = 0; attempt < 40 && !exited; attempt++) {
         if (await isOurServer()) {
             console.log(
-                `\nMusticker Studio: ${url}\nKeep this window open while converting. Press Ctrl+C to stop.\n`,
+                `\nImage Converter: ${url}\nKeep this window open while converting. Press Ctrl+C to stop.\n`,
             )
             openBrowser()
             break

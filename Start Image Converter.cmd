@@ -1,5 +1,5 @@
 @echo off
-title Musticker Studio - Local Image Converter
+title Image Converter
 cd /d "%~dp0"
 where node >nul 2>nul
 if errorlevel 1 (
