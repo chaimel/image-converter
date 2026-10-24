@@ -20,7 +20,7 @@ jobs:
             SERVER: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
             APP_DIR: apps/image-converter
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
 
             - name: Build the image
               run: docker build -t image-converter .

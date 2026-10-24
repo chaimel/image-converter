@@ -22,10 +22,11 @@ COPY --from=build /app/node_modules/dotenv ./node_modules/dotenv
 COPY --from=build /app/scripts/env.mjs /app/scripts/serve.mjs ./scripts/
 COPY --from=build /app/environments ./environments
 # On Linux, Sharp's native binary loads libvips from a separate package (@img/sharp-libvips-*) that
-# Nitro's file tracing cannot see, so copy all of Sharp's platform packages from the build stage.
+# Nitro's file tracing may not pick up, so copy all of Sharp's platform packages from the build stage.
 COPY --from=build /app/node_modules/@img ./.output/server/node_modules/@img
-# Fail the build now, not on the first conversion, if Sharp's Linux binaries were not bundled.
-RUN node -e "require('/app/.output/server/node_modules/sharp')"
+# Fail the build now, not on the first conversion, if Sharp's Linux binaries were not bundled. Import
+# it the way the app does (ESM; the build has no CommonJS entry) and make a real image.
+RUN cd .output/server && node --input-type=module -e "import sharp from 'sharp'; await sharp({ create: { width: 1, height: 1, channels: 3, background: '#000' } }).png().toBuffer()"
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
