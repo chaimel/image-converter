@@ -21,6 +21,9 @@ COPY --from=build /app/.output ./.output
 COPY --from=build /app/node_modules/dotenv ./node_modules/dotenv
 COPY --from=build /app/scripts/env.mjs /app/scripts/serve.mjs ./scripts/
 COPY --from=build /app/environments ./environments
+# On Linux, Sharp's native binary loads libvips from a separate package (@img/sharp-libvips-*) that
+# Nitro's file tracing cannot see, so copy all of Sharp's platform packages from the build stage.
+COPY --from=build /app/node_modules/@img ./.output/server/node_modules/@img
 # Fail the build now, not on the first conversion, if Sharp's Linux binaries were not bundled.
 RUN node -e "require('/app/.output/server/node_modules/sharp')"
 USER node
